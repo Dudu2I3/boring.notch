@@ -283,6 +283,12 @@ class MusicManager: ObservableObject {
         if state.isFavorite != self.isFavoriteTrack {
             self.isFavoriteTrack = state.isFavorite
         }
+
+        // Spotify likes become available once the user connects their account, so re-check.
+        if let spotify = activeController as? SpotifyController,
+           spotify.supportsFavorite != self.canFavoriteTrack {
+            self.canFavoriteTrack = spotify.supportsFavorite
+        }
         
         if volumeChanged {
             self.volume = state.volume

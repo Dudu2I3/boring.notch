@@ -182,6 +182,8 @@ extension Defaults.Keys {
     
     // MARK: Media Controller
     static let mediaController = Key<MediaControllerType>("mediaController", default: defaultMediaController)
+    // Client ID of the user's own Spotify Developer app (needed for the like button)
+    static let spotifyClientID = Key<String>("spotifyClientID", default: "")
     
     // MARK: Advanced Settings
     static let useCustomAccentColor = Key<Bool>("useCustomAccentColor", default: false)

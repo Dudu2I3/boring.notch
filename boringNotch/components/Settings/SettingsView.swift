@@ -639,6 +639,10 @@ struct Media: View {
                 }
             }
             
+            if mediaController == .spotify {
+                SpotifyConnectionSection()
+            }
+
             Section {
                 Toggle(
                     "Show music live activity",
@@ -703,6 +707,63 @@ struct Media: View {
             return MediaControllerType.allCases.filter { $0 != .nowPlaying }
         } else {
             return MediaControllerType.allCases
+        }
+    }
+}
+
+/// Lets the user connect their own Spotify Developer app so the like button works with Spotify.
+struct SpotifyConnectionSection: View {
+    @Default(.spotifyClientID) var clientID
+    @ObservedObject var auth = SpotifyAuthManager.shared
+
+    var body: some View {
+        Section {
+            TextField("Client ID", text: $clientID)
+                .disabled(auth.isConnected)
+
+            HStack {
+                Text("Status")
+                Spacer()
+                if auth.isAuthorizing {
+                    Text("Waiting for login…").foregroundStyle(.secondary)
+                } else if auth.isConnected {
+                    Text("Connected").foregroundStyle(.green)
+                } else {
+                    Text("Not connected").foregroundStyle(.secondary)
+                }
+            }
+
+            if auth.isConnected {
+                Button("Disconnect") { auth.disconnect() }
+            } else {
+                Button("Connect to Spotify") {
+                    Task { await auth.connect() }
+                }
+                .disabled(
+                    clientID.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+                        || auth.isAuthorizing
+                )
+            }
+
+            if let error = auth.lastError {
+                Text(error)
+                    .font(.caption)
+                    .foregroundStyle(.red)
+                    .textSelection(.enabled)
+            }
+        } header: {
+            Text("Spotify likes")
+        } footer: {
+            VStack(alignment: .leading, spacing: 4) {
+                Text(
+                    "The like button needs the Spotify Web API. Create an app at developer.spotify.com/dashboard, enable “Web API”, add this Redirect URI, then paste the app's Client ID above:"
+                )
+                Text(SpotifyAuthManager.redirectURI)
+                    .font(.system(.caption, design: .monospaced))
+                    .textSelection(.enabled)
+            }
+            .font(.caption)
+            .foregroundStyle(.secondary)
         }
     }
 }
